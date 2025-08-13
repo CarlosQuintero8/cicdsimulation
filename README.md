@@ -28,10 +28,12 @@ A basic web application demonstrating automated CI/CD pipeline using GitHub Acti
 ## 🔧 Local Development
 
 ### Prerequisites
+
 - Node.js (v18 or higher)
 - npm
 
 ### Setup
+
 ```bash
 # Install dependencies
 npm install
@@ -54,6 +56,7 @@ npm run serve
 The GitHub Actions pipeline includes 4 jobs:
 
 ### 1. **Test Job**
+
 - Runs on every push and pull request
 - Sets up Node.js environment
 - Installs dependencies
@@ -61,17 +64,20 @@ The GitHub Actions pipeline includes 4 jobs:
 - Uploads test results as artifacts
 
 ### 2. **Build Job**
+
 - Runs after successful tests
 - Validates application files
 - Creates deployment package
 - Uploads build artifacts
 
 ### 3. **Deploy Job**
+
 - Runs only on main branch pushes
 - Deploys to GitHub Pages
 - Requires successful test and build jobs
 
 ### 4. **Notify Job**
+
 - Runs after all other jobs
 - Reports pipeline status
 - Provides deployment feedback
@@ -94,6 +100,7 @@ The application includes several types of tests:
 ## 🌐 Deployment
 
 The application is automatically deployed to GitHub Pages when:
+
 1. Code is pushed to the main branch
 2. All tests pass
 3. Build validation succeeds
@@ -101,10 +108,20 @@ The application is automatically deployed to GitHub Pages when:
 ### Manual Deployment
 
 To deploy manually:
+
 1. Go to Actions tab in GitHub repository
 2. Select "CI/CD Pipeline - Deploy Web App"
 3. Click "Run workflow"
 4. Choose the branch and click "Run workflow"
+
+### Finding Your Live URL
+
+After successful deployment, you can find your live URL in several ways:
+
+1. **Repository Settings**: Go to Settings → Pages → Your site is published at: `[URL]`
+2. **Actions Log**: Check the deploy job logs for the deployment URL
+3. **GitHub Pages Environment**: Repository → Environments → github-pages → View deployment
+4. **URL Pattern**: `https://[username].github.io/[repository-name]`
 
 ## 📊 Monitoring
 
@@ -115,16 +132,19 @@ To deploy manually:
 ## 🛠️ Customization
 
 ### Adding New Tests
+
 1. Add test files with `.test.js` extension
 2. Follow Jest testing patterns
 3. Tests run automatically in pipeline
 
 ### Modifying Build Process
+
 1. Update `validate.js` for custom validation rules
 2. Modify `package.json` scripts as needed
 3. Update GitHub Actions workflow if required
 
 ### Changing Deployment Target
+
 1. Replace GitHub Pages deployment step
 2. Add necessary secrets/environment variables
 3. Update deployment job in `.github/workflows/deploy.yml`
@@ -145,4 +165,10 @@ To deploy manually:
 
 ---
 
-**Live Demo**: [GitHub Pages URL will be available after first deployment]
+## 🌐 Live Demo
+
+**🚀 [View Live Application](https://carlosquintero8.github.io/cicdsimulation/)**
+
+> **URL**: `https://carlosquintero8.github.io/cicdsimulation/`
+>
+> The live demo showcases the complete CI/CD pipeline in action with automatic deployment to GitHub Pages. Click the link above to see the interactive counter application running live!
