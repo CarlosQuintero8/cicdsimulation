@@ -1,0 +1,132 @@
+name: CI/CD Pipeline - Deploy Web App
+
+# Trigger the workflow on push to main branch and pull requests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+# Define jobs
+jobs:
+  # Job 1: Test the application
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🧪 Run tests
+      run: npm test
+      
+    - name: 📊 Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: |
+          coverage/
+          test-results.xml
+        retention-days: 30
+
+  # Job 2: Build and validate the application
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🔨 Build application
+      run: npm run build
+      
+    - name: 📁 Create deployment package
+      run: |
+        mkdir -p dist
+        cp index.html dist/
+        cp styles.css dist/
+        cp script.js dist/
+        echo "Build completed at $(date)" > dist/build-info.txt
+        
+    - name: 📤 Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-app-build
+        path: dist/
+        retention-days: 30
+
+  # Job 3: Deploy to GitHub Pages (only on main branch)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📁 Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: 📤 Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '.'
+        
+    - name: 🚀 Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+  # Job 4: Notify deployment status
+  notify:
+    runs-on: ubuntu-latest
+    needs: [test, build, deploy]
+    if: always()
+    
+    steps:
+    - name: 📢 Deployment Success Notification
+      if: needs.deploy.result == 'success'
+      run: |
+        echo "🎉 Deployment successful!"
+        echo "✅ Tests passed: ${{ needs.test.result }}"
+        echo "✅ Build completed: ${{ needs.build.result }}"
+        echo "✅ Deployment completed: ${{ needs.deploy.result }}"
+        
+    - name: 📢 Deployment Failure Notification
+      if: needs.deploy.result == 'failure' || needs.test.result == 'failure' || needs.build.result == 'failure'
+      run: |
+        echo "💥 Pipeline failed!"
+        echo "Tests: ${{ needs.test.result }}"
+        echo "Build: ${{ needs.build.result }}"
+        echo "Deploy: ${{ needs.deploy.result }}"
+        exit 1
